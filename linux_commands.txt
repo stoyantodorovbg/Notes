@@ -1,0 +1,79 @@
+scp -r remote local - ssh copy
+rm -rf - remove non empty directories
+cp -r - copy non empty directories
+cp - prevent overwriting existing files
+Ctrl-r - search in history of commands
+
+
+FOLDER RIGHTS
+
+chmod - changes 
+chown - changes ownership
+-R - modifies the permission of the parent folder and the child objects within
+u - user
+g - group
+o - gives permission to everyone
+a - all users
++rw - read and write access
++x - execute permission
+-rw - deprive permissions
+numbers - first: owner, second: group, third: all users
+r - 4
+w - 2
+x - 1
+0 – no permission
+1 – execute
+2 – write
+3 – write and execute
+4 – read
+5 – read and execute
+6 – read and write
+7 – read, write, and execute
+
+
+GREP 
+
+cat filename | grep filter - serch for matches in file by a filter word
+grep filter filename - the same
+grep -i filter filename - case insensitive filtering
+grep -v - get no matching results
+grep -vi - the same, case insensitive
+grep -A1 - results + the next line
+grep -B1 - results + the privious line
+grep -C1 - results + the privious and the next line
+grep -Rl "btn btn-default btn-slug" /data/web_docs/stoyan-todorov/vta-a4
+
+
+TR
+
+cat filename +
+tr 'l' 'L' - transform all occurances
+tr 'a-z' 'A-Z' - the same with regex
+tr -s 'p' - reduce multiple occurences to one
+tr -d 'p' - delete occurences
+
+
+SORT 
+
+sort filename - return sorted lines of the file
+sort -n filename - numerical sorting
+
+
+UNIQ
+
+uniq filename - return unique lines of the file
+uniq -c filename - return lines with theirs count
+
+
+WC
+
+wc filename - return word and character count in the file
+
+
+WHO 
+
+who - show logged in user
+
+
+
+

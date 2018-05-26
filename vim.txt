@@ -1,0 +1,11 @@
+D - delete
+delete btn - the same
+h - left, j - down, k - up, l - right
+u - undo
+q - quit
+w - write
+colorscheme desert
+colorscheme + tab - choise background
+% - current file
+so % - syntax hightlighting
+:help something - help

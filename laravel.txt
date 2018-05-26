@@ -1,0 +1,109 @@
+***
+TRANSACTION
+
+use DB - DB:transaction(function(){}) - transaction
+DB:transaction(function() use ($model) {}) - with parameter
+
+***
+
+AUTH
+
+Auth::loginUsingId(1) - login user with id 1 
+
+***
+HELPERS
+
+json_encode() - converts the data to json
+
+
+***
+MODEL
+
+use Auth
+public static function boot()
+{
+    parent::boot();
+    static::updating(function($model){
+	$model->relation()->attach(Auth::id(), [
+        'before_column' => json_encode(array_intersect_key($model->fresh()->toArray(), $model->getDirty()))
+	'after_column'  => json_encode($model->getDirty())
+    ]);
+    }
+} - event in the model, that attach related model at every update.
+
+$model->toJson() - converts the model data to json
+
+$model->fresh() - returns a fresh copy of the unstance
+
+$model->getDirty() - returns the changed properties of the model
+
+Model::orderBy('column_name', 'desc')->get() - returns all rows, sorted
+
+Model::where('column_name', 'some_value')->get() - select with where clause
+Model::where('id', '>=', 100)->get()
+
+$model = (new Model)->newQuery(); Model::where('column_name', 'some_value') or Model::orderBy('column_name', 'desc'); $lesson->get();
+
+Model::find([$first_id, $second_id]) - returns a collection with the objects with these ids 
+
+Model::with('relation')->get() - retrieves all instances with theirs relations
+
+***
+MODEL RELATIONS
+
+$this->belongsToMany(User::class, 'adjustements')
+->withTimstamps()
+->withPivot(['before', 'after'])
+->latest(); 
+- the pivot table is named '
+'adjusments'; 
+- timstamps enable ataching - $model->adjustements()->attach($user->id) 
+- and with {{ $model->pivot->updated_at }} - we can retrieve the timestamp for the relation 
+creating and updating 
+- latest() - orders the rows in the pivot table in descending order - the latest are above
+- latest('pivot_updated_at') - the same, but orders by updating of the pivot table
+- withPivot(['before', 'after']) - enable displaying of the additional columns in the pivot table
+
+***
+REQUEST
+
+use App\Http\Requests
+
+$requests->exists('property_name') - check only for key in the request
+$request->has('property_name') - check for key with asociated value in the request
+
+***
+PHP ARTISAN
+
+add artisan commands:
+composer require "laracasts/generators" - generates models and migrations
+composer require laracasts/testdummy --dev - testing and easy db seeding
+config/app -> providers, //Application Service Provider add Laracasts\Generators\GeneratorsServiceProvider; {
+
+	pa make:migration:schema create_posts_table --schema="user_id:integer:fereign, title:string, body:text"
+	- creates model with migration. The foreign key is for users table
+
+	pa make:seed posts - create seeder with including Laracasts\TestDummy\Factory 
+	in the seeder there is TestDummy::times(20)->create('App\Post'),
+	in foder tests mkdir factories, touch all.php:
+		$factory('App\User', [
+		'name' => $faker->name,
+		'email' => $faker->email,
+		'password' => $faker->bycript(word)]);
+
+		$factory('App\Post', [
+		'user_id' => 'factory::App\User', - relate the post to an user
+		'title' => $faker->sentence, 
+		'body' => $faker->paragraph]);
+
+}
+
+
+
+
+
+
+*** 
+CARBON
+
+{{ $model->pivot->updated_at->diffForHumans() }} - returns '2(example) minutes ago'
