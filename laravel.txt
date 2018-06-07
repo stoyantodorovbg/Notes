@@ -1,19 +1,49 @@
 ***
-TRANSACTION
-
-use DB - DB:transaction(function(){}) - transaction
-DB:transaction(function() use ($model) {}) - with parameter
-
-***
 
 AUTH
 
 Auth::loginUsingId(1) - login user with id 1 
 
 ***
-HELPERS
+ARTISAN
 
-json_encode() - converts the data to json
+add artisan commands:
+composer require "laracasts/generators" - generates models and migrations
+composer require laracasts/testdummy --dev - testing and easy db seeding
+config/app -> providers, //Application Service Provider add Laracasts\Generators\GeneratorsServiceProvider; {
+		$factory('App\User', [
+		'name' => $faker->name,
+		'email' => $faker->email,
+		'password' => $faker->bycript(word)]);
+
+		$factory('App\Post', [
+		'user_id' => 'factory::App\User', - relate the post to an user
+		'title' => $faker->sentence, 
+		'body' => $faker->paragraph]);
+
+}
+
+pa make:model Models/Model -mr - model with migration controller (resourceble)
+pa make:migration:schema create_posts_table --schema="user_id:integer:fereign, title:string, body:text"
+	- creates model with migration. The foreign key is for users table
+pa make:seed posts - create seeder with including Laracasts\TestDummy\Factory 
+in the seeder there is TestDummy::times(20)->create('App\Post'),
+in folder tests mkdir factories, touch all.php:
+
+*** 
+CARBON
+
+{{ $model->pivot->updated_at->diffForHumans() }} - returns '2(example) minutes ago'
+
+
+***
+
+FACTORY
+
+$threads = factory('App\Models\Thread', 50)->create();
+factory('App\Models\Thread')->raw(); - returb a thread as array
+$threads->each(function($eachThread){ factory('App\Models\Reply')->create(['thread_id' => $eachThread->id]);});
+
 
 
 ***
@@ -64,6 +94,65 @@ creating and updating
 - latest('pivot_updated_at') - the same, but orders by updating of the pivot table
 - withPivot(['before', 'after']) - enable displaying of the additional columns in the pivot table
 
+
+***
+MIDDLEWARE
+
+public function __construct()
+    {
+        $this->middleware('auth')->only('store'); - in the controller, only for store method
+    } 
+
+***
+HELPERS
+
+json_encode() - converts the data to json
+auth()->check() - checks if there is authenticated user
+
+***
+TEST
+
+in Exceptions\Hendler.php render() add if (App::environment('testing')) {throw $exception;} display errors from testing
+
+--Featute
+
+<env name="DB_CONNECTION" value="sqlite"/>
+<env name="DB_DATABASE" value=":memory:"/> in <php></php> of phpunit.xml
+use DatabaseMigrations; (trait) in tests/Features/SomthingTest.php - configure a separate testing DB
+
+./vendor/bin/phpunit - runs tests
+
+-assert functions:
+$response->assertStatus(200);
+
+$response = $this->get('/threads/'.$thread->id);
+$response->assertSee($thread->title);
+$this->be($user); - authenticates an user;
+$this->actingAs($user = factory('App\User')->create()); - sets the currently logged in user 
+$this->assertCount(1, $thread->replies); - assert that $thread has one reply
+$this->expectException('Illuminate\Auth\AuthenticationException'); 
+
+public function setUp()
+    {
+        parent::setUp();
+
+        $this->thread = factory('App\Models\Thread')->create();
+    } - sets testing data, accessible in the $this
+
+
+--Unit 
+
+php artisan make:test ReplyTest --unit - create an unit test
+
+$this->assertInstanceOff('App\User', $reply->owner); - assert that the second argument is istance of the first
+
+
+***
+TRANSACTION
+
+use DB - DB:transaction(function(){}) - transaction
+DB:transaction(function() use ($model) {}) - with parameter
+
 ***
 REQUEST
 
@@ -72,38 +161,10 @@ use App\Http\Requests
 $requests->exists('property_name') - check only for key in the request
 $request->has('property_name') - check for key with asociated value in the request
 
-***
-PHP ARTISAN
-
-add artisan commands:
-composer require "laracasts/generators" - generates models and migrations
-composer require laracasts/testdummy --dev - testing and easy db seeding
-config/app -> providers, //Application Service Provider add Laracasts\Generators\GeneratorsServiceProvider; {
-
-	pa make:migration:schema create_posts_table --schema="user_id:integer:fereign, title:string, body:text"
-	- creates model with migration. The foreign key is for users table
-
-	pa make:seed posts - create seeder with including Laracasts\TestDummy\Factory 
-	in the seeder there is TestDummy::times(20)->create('App\Post'),
-	in foder tests mkdir factories, touch all.php:
-		$factory('App\User', [
-		'name' => $faker->name,
-		'email' => $faker->email,
-		'password' => $faker->bycript(word)]);
-
-		$factory('App\Post', [
-		'user_id' => 'factory::App\User', - relate the post to an user
-		'title' => $faker->sentence, 
-		'body' => $faker->paragraph]);
-
-}
 
 
 
 
 
 
-*** 
-CARBON
 
-{{ $model->pivot->updated_at->diffForHumans() }} - returns '2(example) minutes ago'
