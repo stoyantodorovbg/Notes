@@ -4,6 +4,17 @@ AUTH
 
 Auth::loginUsingId(1) - login user with id 1 
 
+AuthServiceProvider:
+public function boot()
+    {
+        $this->registerPolicies();
+
+        Gate::before(function ($user) {
+            if ($user->name === 'User')
+                return true;
+        }); 
+    }
+
 ***
 ARTISAN
 
@@ -24,11 +35,44 @@ config/app -> providers, //Application Service Provider add Laracasts\Generators
 }
 
 pa make:model Models/Model -mr - model with migration controller (resourceble)
+pa make model Models/Model -m - model with migtration
 pa make:migration:schema create_posts_table --schema="user_id:integer:fereign, title:string, body:text"
 	- creates model with migration. The foreign key is for users table
 pa make:seed posts - create seeder with including Laracasts\TestDummy\Factory 
 in the seeder there is TestDummy::times(20)->create('App\Post'),
 in folder tests mkdir factories, touch all.php:
+
+php artisan clear-compiled
+
+php artisan optimize
+
+***
+BLADE
+
+value="{{ old('property_name') }}" - keeps the input if the validation of the form fails 
+
+@if(count($errors))
+    <ul class="alert alert-danger">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+@endif - displaying the form validation errors
+	
+$thread->replies()->count() - returns number of instances (replies), makes sql
+only for the counts of the rows.	
+
+{{ str_plural('comment', $thread->replies_count) }} - converts comment to plural form
+if the comments are more then one
+
+
+***
+CACHE
+
+$channels = Cache::rememberForever('channels', function () {
+                return Channel::all();
+            });
+			
 
 *** 
 CARBON
@@ -37,13 +81,56 @@ CARBON
 
 
 ***
+CONTROLLER
 
+if(request()->wantsJson()) {
+            return $threads;
+        }
+	
+return response([], 204);	
+		
+***
+DEBUGBAR
+
+$ composer require barryvdh/laravel-debugbar --dev
+and 
+if ($this->app->isLocal()) {
+            $this->app->register(\Barryvdh\Debugbar\ServiceProvider::class);
+        } 
+in AppServiceProvider.php - install debugbar
+
+
+***
+ELOQUENT
+
+Thread::withCount('replies)->find(71) - returns an instance of Thread 
+with property - count of releated instances (replies). 
+
+***
 FACTORY
 
 $threads = factory('App\Models\Thread', 50)->create();
 factory('App\Models\Thread')->raw(); - returb a thread as array
 $threads->each(function($eachThread){ factory('App\Models\Reply')->create(['thread_id' => $eachThread->id]);});
 
+
+***
+MIGRATIONS
+
+$table->unique(['user_id', 'favorite_id', 'favorite_type']); - unique constraint key
+$table->unsignedInteger('user_id')->index(); -> add index
+
+***
+MIDDLEWARE
+
+public function __construct()
+    {
+        $this->middleware('auth')->only('store'); - in the controller, only for store method
+    } 
+$this->middleware('auth')->except([
+            'index',
+            'show'
+        ]); - the same, but except metods
 
 
 ***
@@ -61,6 +148,11 @@ public static function boot()
     }
 } - event in the model, that attach related model at every update.
 
+public function getRouteKeyName()
+    {
+        return 'slug';
+    } - return slug for the model instead of id
+
 $model->toJson() - converts the model data to json
 
 $model->fresh() - returns a fresh copy of the unstance
@@ -77,6 +169,38 @@ $model = (new Model)->newQuery(); Model::where('column_name', 'some_value') or M
 Model::find([$first_id, $second_id]) - returns a collection with the objects with these ids 
 
 Model::with('relation')->get() - retrieves all instances with theirs relations
+
+protected static function boot ()
+    {
+        parent::boot();
+
+        static::addGlobalScope('replyCount', function ($builder) {
+            $builder->withCount('replies');
+        });
+    } - add a property replies_count to every instance of the model
+	
+$thread->replies()->paginate(10) 
+{{ $thread->replies()->paginate(1)->links() }}
+
+protected $with = ['owner']; - loads every instance with releated owner
+
+protected static function boot ()
+    {
+        parent::boot();
+
+        static::deleting(function($thread){
+            $thread->replies()->delete();
+        });
+    }
+	
+	In used trait: 
+	protected static function bootRecordActivity()
+    {
+        static::created(function ($thread) {
+            $thread->recordActivity('created');
+        });
+    } add event to the model
+
 
 ***
 MODEL RELATIONS
@@ -96,18 +220,12 @@ creating and updating
 
 
 ***
-MIDDLEWARE
-
-public function __construct()
-    {
-        $this->middleware('auth')->only('store'); - in the controller, only for store method
-    } 
-
-***
 HELPERS
 
 json_encode() - converts the data to json
 auth()->check() - checks if there is authenticated user
+get_class($instance) -> returns string with namespace and className
+(new \ReflectionClass($thread))->getShortName() - returns ClassName
 
 ***
 TEST
@@ -125,12 +243,24 @@ use DatabaseMigrations; (trait) in tests/Features/SomthingTest.php - configure a
 -assert functions:
 $response->assertStatus(200);
 
+$response = $this->post('/threads', $thread->toArray());
+$response->headers->get('Location'); - returns full url
+
 $response = $this->get('/threads/'.$thread->id);
 $response->assertSee($thread->title);
+$this->->assertDontSee('something')
 $this->be($user); - authenticates an user;
 $this->actingAs($user = factory('App\User')->create()); - sets the currently logged in user 
 $this->assertCount(1, $thread->replies); - assert that $thread has one reply
 $this->expectException('Illuminate\Auth\AuthenticationException'); 
+$this->assertSessionHasErrors('title'); - assert an error in the sesion with name 'title' 
+$this->assertTrue(statement)
+
+$response = $this->json('DELETE', $thread->path());
+$response->assertStatus(200);
+$this->assertDatabaseMissing('threads', $thread->toArray());
+$this->assertDatabaseHas('threads', $thread->toArray());
+
 
 public function setUp()
     {
@@ -146,12 +276,27 @@ php artisan make:test ReplyTest --unit - create an unit test
 
 $this->assertInstanceOff('App\User', $reply->owner); - assert that the second argument is istance of the first
 
-
 ***
-TRANSACTION
+POLICY
 
-use DB - DB:transaction(function(){}) - transaction
-DB:transaction(function() use ($model) {}) - with parameter
+pa make:policy ThreadPolicy --model=Thread
+
+in AuthServiceProvider:
+protected $policies = [
+        'App\Models\Thread' => 'App\Policies\ThreadPolicy',
+    ];
+
+in the view:
+@can('update', $model)
+@endcan
+
+public function before($user)
+    {
+        if ($user->name === 'User') {
+            return true;
+        }
+    } stops the protection of the polecy
+
 
 ***
 REQUEST
@@ -160,6 +305,13 @@ use App\Http\Requests
 
 $requests->exists('property_name') - check only for key in the request
 $request->has('property_name') - check for key with asociated value in the request
+request() - returns the request
+
+***
+TRANSACTION
+
+use DB - DB:transaction(function(){}) - transaction
+DB:transaction(function() use ($model) {}) - with parameter
 
 
 

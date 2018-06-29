@@ -73,6 +73,11 @@ git merge --abort -> try to revert to the state before the merging. Work if ther
 git diff file_name -> display the conflicts in the file
 
 
+---GIT PUSH---
+
+git push --set-upstream origin master -> configure git push to pushes in the master only 
+
+
 ---GIT REBASE---
 
 git rebase -i branch_name -> edit commits
@@ -114,6 +119,8 @@ git reset --hard ->discard all changes after last commit
 
 
 ---GIT SHOW---
+
+git show commit_number
 
 
 ---GIT STASH---
