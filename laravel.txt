@@ -65,6 +65,8 @@ only for the counts of the rows.
 {{ str_plural('comment', $thread->replies_count) }} - converts comment to plural form
 if the comments are more then one
 
+@include("profiles.activities.$record->type", ['activity' => $record]) - pass $activity to the included template
+
 
 ***
 CACHE
@@ -78,6 +80,7 @@ $channels = Cache::rememberForever('channels', function () {
 CARBON
 
 {{ $model->pivot->updated_at->diffForHumans() }} - returns '2(example) minutes ago'
+Carbon::now()->subWeek(); - date one week ago
 
 
 ***
@@ -104,7 +107,9 @@ in AppServiceProvider.php - install debugbar
 ELOQUENT
 
 Thread::withCount('replies)->find(71) - returns an instance of Thread 
-with property - count of releated instances (replies). 
+with property - count of releated instances (replies).
+$thread->replies->each->delete(); - deletes all replies, releted to the thread 
+where('user_id', auth()->id())->count(); - returns the count of the DB rows
 
 ***
 FACTORY
@@ -130,7 +135,7 @@ public function __construct()
 $this->middleware('auth')->except([
             'index',
             'show'
-        ]); - the same, but except metods
+        ]); - the same, but except methods
 
 
 ***
@@ -158,6 +163,12 @@ $model->toJson() - converts the model data to json
 $model->fresh() - returns a fresh copy of the unstance
 
 $model->getDirty() - returns the changed properties of the model
+
+$model->take(50) - returns 50 items if there are so much
+
+$model->increment('replies_count'); - increments this model property
+
+$model->increment('replies_count'); - the opposite
 
 Model::orderBy('column_name', 'desc')->get() - returns all rows, sorted
 
@@ -200,6 +211,8 @@ protected static function boot ()
             $thread->recordActivity('created');
         });
     } add event to the model
+	
+	
 
 
 ***
@@ -226,6 +239,7 @@ json_encode() - converts the data to json
 auth()->check() - checks if there is authenticated user
 get_class($instance) -> returns string with namespace and className
 (new \ReflectionClass($thread))->getShortName() - returns ClassName
+get_class($model) - returns clas sname
 
 ***
 TEST

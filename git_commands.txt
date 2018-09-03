@@ -19,11 +19,11 @@ git config --global alias.stash-unapply '!git stash show -p | git apply -R' -> m
 
 git commit --amend -> add new files and modified files to the last commit and  edit the message of the last commit !!
 
-git commit --amend -m 'updateted message' - the same !!
+git commit --amend -m 'updateted message' -> the same !!
 
 git commit --amend --no-edit -> add new files and modified files to the last commit without a modification of the commit message !!
 
-git show commit_id - display the differences introduced of the commit
+git show commit_id -> display the differences introduced of the commit
 
 
 git show commit_number -> show the differences, introdused with the commit
@@ -147,6 +147,8 @@ git ls-files -> list all files in git index
 git clean -d -n -> display what will clean
 
 git rebase -i HEAD~3 !!
+
+rm -f ./.git/index.lock - if git crashes bacause of some process is running
 
 
 
