@@ -18,6 +18,7 @@ json_encode() - converts the data to json
 
 ***
 MODEL
+Research for the missing salutation and phone number from the folios created from the newsletter pop-up banner. This form haven't these fields and the other from don't update these fields for existing folios.
 
 use Auth
 public static function boot()

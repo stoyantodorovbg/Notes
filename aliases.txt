@@ -1,0 +1,19 @@
+# php artisan
+alias cda='composer dump-autoload'
+alias vc='php artisan view:clear'
+alias cc='php artisan cache:clear && php artisan view:clear && php artisan config:clear && php artisan clear-html && php artisan route:clear && php artisan clear-compiled && composer dump-autoload'
+
+#gulp
+alias ga='gulp all'
+alias gw='gulp watch'
+
+#git
+alias gaa='git add --all'
+alias gap='git add -p'
+alias gcm='git commit -m'
+alias gl='git log'
+
+#ls
+alias la='ls -A'
+alias l='ls -CF'
+
