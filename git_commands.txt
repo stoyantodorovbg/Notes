@@ -117,6 +117,10 @@ git reset --mixed -> unstage the modified files and untrack the new files
 
 git reset --hard ->discard all changes after last commit
 
+git reset --hard uat@("60 minutes ago")
+git reset --hard dev_VTA#RFC#1802022@{"10 minutes ago"}
+e2f6f5b071f2a66d68b0767caaf5d45cec4825e8
+
 
 ---GIT SHOW---
 
