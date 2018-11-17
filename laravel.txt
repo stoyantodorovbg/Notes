@@ -41,9 +41,12 @@ pa make:migration:schema create_posts_table --schema="user_id:integer:fereign, t
 pa make:seed posts - create seeder with including Laracasts\TestDummy\Factory 
 in the seeder there is TestDummy::times(20)->create('App\Post'),
 in folder tests mkdir factories, touch all.php:
+php artisan make:mail ConfirmEmail --markdown="emails.confirm" - create Mailable class with view
 
 php artisan clear-compiled
-
+php artisan config:cache
+php artisan config:clear
+php artisan route:cache
 php artisan optimize
 
 ***
@@ -110,6 +113,7 @@ Thread::withCount('replies)->find(71) - returns an instance of Thread
 with property - count of releated instances (replies).
 $thread->replies->each->delete(); - deletes all replies, releted to the thread 
 where('user_id', auth()->id())->count(); - returns the count of the DB rows
+User::forceCreate();
 
 ***
 FACTORY
@@ -124,6 +128,8 @@ MIGRATIONS
 
 $table->unique(['user_id', 'favorite_id', 'favorite_type']); - unique constraint key
 $table->unsignedInteger('user_id')->index(); -> add index
+$table->foreign('best_reply_id')->references('id')->on('replies')->onDelete('set null'); - when delete a Reply the best_reply_id will be null 
+$table->foreign('best_reply_id')->references('id')->on('replies')->onDelete('set null'); - when delete a Reply the Thread will be deleted too
 
 ***
 MIDDLEWARE
@@ -168,7 +174,7 @@ $model->take(50) - returns 50 items if there are so much
 
 $model->increment('replies_count'); - increments this model property
 
-$model->increment('replies_count'); - the opposite
+$model->decrement('replies_count'); - the opposite
 
 Model::orderBy('column_name', 'desc')->get() - returns all rows, sorted
 
@@ -240,6 +246,20 @@ auth()->check() - checks if there is authenticated user
 get_class($instance) -> returns string with namespace and className
 (new \ReflectionClass($thread))->getShortName() - returns ClassName
 get_class($model) - returns clas sname
+collect($item) - returns array collection
+json_decode($item) 
+str_slug($string) - creates a slug from string
+abort_if($reply->thread->user_id != auth()->id(), 401); 
+
+
+***
+REDIS
+
+Redis::zrevrange('trending_threads', 0, 5); - get first 6 items
+Redis::zrevrange('trending_threads', 0, -1); - get all
+Redis::del('trending_threads'); - delete all
+
+
 
 ***
 TEST
